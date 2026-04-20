@@ -128,7 +128,7 @@ cargo run -- --gen 1000 | ./target/release/sortxt | head -10
 
 ## 许可证
 
-[MIT](LICENSE) 或 [Apache 2.0](LICENSE-APACHE)，任选其一。
+[MIT](LICENSE) 
 
 ## 贡献
 
