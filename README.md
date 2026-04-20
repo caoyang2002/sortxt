@@ -105,8 +105,14 @@ cargo run -- --gen 1000 > random_data.txt
 
 ```bash
 # 排序并统计耗时
-time ./target/release/sortxt -v -i huge.txt -o sorted_huge.txt
+time ./target/release/sortxt -v -i test.txt -o sorted.txt
+
+# 对比测试一
+time cat test.txt | LC_ALL=zh_CN.UTF-8 sort > sorted.txt
+# 对比测试二
+time cat test.txt | sort > sorted.txt
 ```
+
 
 ### 管道工作流
 
