@@ -65,9 +65,18 @@ mod tests {
             ignore_case: false,
             ignore_leading_blanks: false,
         };
-        assert_eq!(compute_sort_key("Apple", config), ('A', "Apple".to_string()));
-        assert_eq!(compute_sort_key("apple", config), ('a', "apple".to_string()));
-        assert_eq!(compute_sort_key("  Banana", config), (' ', "  Banana".to_string()));
+        assert_eq!(
+            compute_sort_key("Apple", config),
+            ('A', "Apple".to_string())
+        );
+        assert_eq!(
+            compute_sort_key("apple", config),
+            ('a', "apple".to_string())
+        );
+        assert_eq!(
+            compute_sort_key("  Banana", config),
+            (' ', "  Banana".to_string())
+        );
     }
 
     #[test]
@@ -76,8 +85,14 @@ mod tests {
             ignore_case: false,
             ignore_leading_blanks: true,
         };
-        assert_eq!(compute_sort_key("  Banana", config), ('B', "  Banana".to_string()));
-        assert_eq!(compute_sort_key("\t\tCherry", config), ('C', "\t\tCherry".to_string()));
+        assert_eq!(
+            compute_sort_key("  Banana", config),
+            ('B', "  Banana".to_string())
+        );
+        assert_eq!(
+            compute_sort_key("\t\tCherry", config),
+            ('C', "\t\tCherry".to_string())
+        );
     }
 
     #[test]
@@ -86,8 +101,14 @@ mod tests {
             ignore_case: true,
             ignore_leading_blanks: false,
         };
-        assert_eq!(compute_sort_key("Apple", config), ('a', "apple".to_string()));
-        assert_eq!(compute_sort_key("apple", config), ('a', "apple".to_string()));
+        assert_eq!(
+            compute_sort_key("Apple", config),
+            ('a', "apple".to_string())
+        );
+        assert_eq!(
+            compute_sort_key("apple", config),
+            ('a', "apple".to_string())
+        );
         // 非 ASCII 不受影响
         assert_eq!(compute_sort_key("北京", config), ('北', "北京".to_string()));
     }
@@ -142,7 +163,12 @@ mod tests {
 
     #[test]
     fn test_empty_lines() {
-        let lines = vec!["".to_string(), "a".to_string(), "".to_string(), "B".to_string()];
+        let lines = vec![
+            "".to_string(),
+            "a".to_string(),
+            "".to_string(),
+            "B".to_string(),
+        ];
         let config = SortConfig {
             ignore_case: false,
             ignore_leading_blanks: false,

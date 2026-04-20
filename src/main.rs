@@ -1,6 +1,6 @@
-use sortxt::{Args, SortConfig, sort_lines, io_utils, generator::GenType};
-use sortxt::generator;
 use clap::Parser;
+use sortxt::generator;
+use sortxt::{Args, SortConfig, generator::GenType, io_utils, sort_lines};
 use std::io;
 use std::time::Instant;
 
@@ -15,7 +15,10 @@ fn main() -> io::Result<()> {
             "word" => GenType::Word,
             "sentence" => GenType::Sentence,
             _ => {
-                eprintln!("错误：无效的生成类型 '{}'，支持的类型：char, word, sentence", args.gen_type);
+                eprintln!(
+                    "错误：无效的生成类型 '{}'，支持的类型：char, word, sentence",
+                    args.gen_type
+                );
                 std::process::exit(1);
             }
         };
@@ -48,7 +51,8 @@ fn main() -> io::Result<()> {
     }
 
     // 读取所有行
-    let (lines, line_count, read_duration) = io_utils::read_lines(args.input.as_deref(), args.verbose)?;
+    let (lines, line_count, read_duration) =
+        io_utils::read_lines(args.input.as_deref(), args.verbose)?;
 
     if args.verbose {
         eprintln!("读取完成：{} 行，耗时 {:.2?}", line_count, read_duration);
@@ -73,7 +77,10 @@ fn main() -> io::Result<()> {
     let write_duration = io_utils::write_lines(&sorted, args.output.as_deref(), args.verbose)?;
 
     if args.verbose {
-        eprintln!("总耗时：{:.2?}", read_duration + sort_duration + write_duration);
+        eprintln!(
+            "总耗时：{:.2?}",
+            read_duration + sort_duration + write_duration
+        );
     }
 
     Ok(())

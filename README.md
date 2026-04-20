@@ -86,21 +86,6 @@ cargo run -- --gen 20 --gen-type sentence --output sentences.txt
 cargo run -- --gen 1000 > random_data.txt
 ```
 
-### 3. 使用测试数据生成脚本
-
-项目提供了 `gen_test_data.sh` 脚本，可快速生成指定行数的测试数据。
-
-```bash
-# 生成 10000 行测试数据，输出到 test.txt
-./gen_test_data.sh 10000 test.txt
-
-# 生成 500 行并直接通过管道传给排序程序
-./gen_test_data.sh 500 | ./target/release/sortxt -v
-
-# 生成超大文件（例如 100 万行）
-./gen_test_data.sh 1000000 huge_test.txt
-```
-
 ## 完整命令行参数
 
 | 参数 | 说明 |
@@ -119,9 +104,6 @@ cargo run -- --gen 1000 > random_data.txt
 ### 性能测试
 
 ```bash
-# 生成 1GB 测试文件
-./gen_test_data.sh 10000000 huge.txt
-
 # 排序并统计耗时
 time ./target/release/sortxt -v -i huge.txt -o sorted_huge.txt
 ```
@@ -150,7 +132,4 @@ cargo run -- --gen 1000 | ./target/release/sortxt | head -10
 
 ## 贡献
 
-欢迎提交 Issue 和 Pull Request。请确保代码通过 `cargo fmt` 和 `clippy` 检查。
-```
-
-你可以将以上内容保存为项目根目录下的 `README.md`。如果工具的实际行为与文档有出入（例如排序规则不是简单的按行排序），请根据源码调整说明。
+欢迎提交 Issue 和 Pull Request。
