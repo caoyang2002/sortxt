@@ -2,6 +2,7 @@ use clap::Parser;
 use std::path::PathBuf;
 
 /// 按每行的第一个字符对文本行进行排序（基于 Unicode 码点）
+/// 支持重复行统计和去重
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct Args {
@@ -25,11 +26,23 @@ pub struct Args {
     #[arg(short = 'v', long)]
     pub verbose: bool,
 
-    /// 生成随机测试数据（指定行数），此时将忽略排序操作
+    /// 生成随机测试数据（指定行数），此时将忽略排序及其他处理
     #[arg(long, value_name = "LINES")]
-    pub generate: Option<usize>, // 改为 generate
+    pub generate: Option<usize>,
 
     /// 生成数据的类型：char（单字）、word（词语）、sentence（句子），默认为 word
     #[arg(long, value_name = "TYPE", default_value = "word")]
     pub gen_type: String,
+
+    /// 排序后统计每行出现的次数（输出格式：次数 行内容）
+    #[arg(short = 'c', long)]
+    pub count: bool,
+
+    /// 排序后删除重复行，仅保留唯一行（与 --count 同时使用时输出唯一行及其次数）
+    #[arg(short = 'u', long)]
+    pub unique: bool,
+
+    /// 输出重复行统计信息（不带参数则输出到 stderr，带参数则写入文件）
+    #[arg(short = 's', long, value_name = "FILE", require_equals = true, num_args = 0..=1)]
+    pub stats: Option<Option<PathBuf>>,
 }

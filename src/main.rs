@@ -1,6 +1,7 @@
+// main.rs
 use clap::Parser;
 use sortxt::generator;
-use sortxt::{Args, SortConfig, generator::GenType, io_utils, sort_lines};
+use sortxt::{Args, SortConfig, ProcessMode, GenType, io_utils, sort_lines, process_sorted_lines, unique::generate_stats};
 use std::io;
 use std::time::Instant;
 
@@ -9,40 +10,29 @@ fn main() -> io::Result<()> {
 
     // 生成模式优先级最高
     if let Some(lines_count) = args.generate {
-        // 解析生成类型
         let gen_type = match args.gen_type.to_lowercase().as_str() {
             "char" => GenType::Char,
             "word" => GenType::Word,
             "sentence" => GenType::Sentence,
             _ => {
-                eprintln!(
-                    "错误：无效的生成类型 '{}'，支持的类型：char, word, sentence",
-                    args.gen_type
-                );
+                eprintln!("错误：无效的生成类型 '{}'，支持的类型：char, word, sentence", args.gen_type);
                 std::process::exit(1);
             }
         };
-
         if args.verbose {
             eprintln!("正在生成 {} 行 {} 类型的数据...", lines_count, gen_type);
         }
-
         let lines = generator::generate_lines(lines_count, gen_type);
-
         if args.verbose {
             eprintln!("生成完成，正在写入输出...");
         }
-
-        // 写入输出（复用已有的写入函数）
-        let output_path = args.output.as_deref();
-        let write_duration = io_utils::write_lines(&lines, output_path, args.verbose)?;
+        let write_duration = io_utils::write_lines(&lines, args.output.as_deref(), args.verbose)?;
         if args.verbose {
             eprintln!("总耗时：{:.2?}", write_duration);
         }
         return Ok(());
     }
 
-    // 否则执行原有的排序逻辑
     // 检查输入输出是否为同一文件
     if let (Some(input), Some(output)) = (&args.input, &args.output) {
         if input == output {
@@ -58,7 +48,7 @@ fn main() -> io::Result<()> {
         eprintln!("读取完成：{} 行，耗时 {:.2?}", line_count, read_duration);
         eprintln!("正在排序...");
     }
-
+  let (lines, line_count, read_duration) = io_utils::read_lines(args.input.as_deref(), args.verbose)?;
     // 排序
     let sort_start = Instant::now();
     let config = SortConfig {
@@ -70,17 +60,71 @@ fn main() -> io::Result<()> {
 
     if args.verbose {
         eprintln!("排序完成，耗时 {:.2?}", sort_duration);
-        eprintln!("正在写入输出...");
     }
 
-    // 写入结果
-    let write_duration = io_utils::write_lines(&sorted, args.output.as_deref(), args.verbose)?;
+    // 根据 count 和 unique 标志确定处理模式
+    let mode = match (args.count, args.unique) {
+        (true, true)   => ProcessMode::CountUnique,
+        (true, false)  => ProcessMode::Count,
+        (false, true)  => ProcessMode::Unique,
+        (false, false) => ProcessMode::SortOnly,
+    };
+
+    let processed = process_sorted_lines(sorted.clone(), mode);
 
     if args.verbose {
-        eprintln!(
-            "总耗时：{:.2?}",
-            read_duration + sort_duration + write_duration
-        );
+        if args.count || args.unique {
+            eprintln!("已对排序结果进行{}处理",
+                if args.count && args.unique { "去重并统计" }
+                else if args.count { "统计" }
+                else { "去重" });
+        }
+        eprintln!("正在写入输出...");
+    }
+    // 如果需要统计信息
+       if let Some(stats_output) = args.stats {
+           let stats = generate_stats(&sorted, config);
+           // 格式化统计信息
+           let mut stats_lines = Vec::new();
+           stats_lines.push(format!("总行数: {}", stats.total_lines));
+           stats_lines.push(format!("唯一行数: {}", stats.unique_lines));
+           let duplicate_count = stats.duplicate_groups.iter().map(|(_, c)| c).sum::<usize>();
+           let duplicate_lines_count = stats.duplicate_groups.len();
+           stats_lines.push(format!("重复行（次数>1）总出现次数: {}", duplicate_count));
+           stats_lines.push(format!("重复行种类数: {}", duplicate_lines_count));
+           if !stats.duplicate_groups.is_empty() {
+               stats_lines.push("重复行详情（次数 行内容）:".to_string());
+               for (line, count) in stats.duplicate_groups {
+                   stats_lines.push(format!("{:>7} {}", count, line));
+               }
+           }
+
+           // 输出统计信息
+           match stats_output {
+               Some(path) => {
+                   // 写入文件
+                   let content = stats_lines.join("\n");
+                   std::fs::write(&path, content)?;
+                   if args.verbose {
+                       eprintln!("统计信息已写入文件: {}", path.display());
+                   }
+               }
+               None => {
+                   // 输出到 stderr
+                   for line in stats_lines {
+                       eprintln!("{}", line);
+                   }
+               }
+           }
+       }
+
+       // 写入排序/去重/计数后的结果
+       let write_duration = io_utils::write_lines(&processed, args.output.as_deref(), args.verbose)?;
+    // 写入结果
+    // let write_duration = io_utils::write_lines(&processed, args.output.as_deref(), args.verbose)?;
+
+    if args.verbose {
+        eprintln!("总耗时：{:.2?}", read_duration + sort_duration + write_duration);
     }
 
     Ok(())
