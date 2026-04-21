@@ -149,33 +149,35 @@ fn main() -> io::Result<()> {
 
     // ==================== 显式统计信息输出（--stats）====================
     // 如果用户显式指定 --stats，则输出摘要（不输出重复行详情）到文件或 stderr
-    if let Some(stats_output) = args.stats {
-        let stats = generate_stats(&sorted, config);
-        let mut stats_lines = Vec::new();
-        stats_lines.push(format!("总行数: {}", stats.total_lines));
-        stats_lines.push(format!("唯一行数: {}", stats.unique_lines));
-        let duplicate_count = stats.duplicate_groups.iter().map(|(_, c)| c).sum::<usize>();
-        let duplicate_lines_count = stats.duplicate_groups.len();
-        stats_lines.push(format!("重复行（次数>1）总出现次数: {}", duplicate_count));
-        stats_lines.push(format!("重复行种类数: {}", duplicate_lines_count));
-        // 注意：这里不再输出重复行详情，只输出摘要
+    // 当指定 --count 或 --unique 时，且没有同时指定 --stats 时，自动输出统计信息到 stderr
+    if (args.count || args.unique) && args.stats.is_none() {
+        if let Some(stats_output) = args.stats {
+            let stats = generate_stats(&sorted, config);
+            let mut stats_lines = Vec::new();
+            stats_lines.push(format!("总行数: {}", stats.total_lines));
+            stats_lines.push(format!("唯一行数: {}", stats.unique_lines));
+            let duplicate_count = stats.duplicate_groups.iter().map(|(_, c)| c).sum::<usize>();
+            let duplicate_lines_count = stats.duplicate_groups.len();
+            stats_lines.push(format!("重复行（次数>1）总出现次数: {}", duplicate_count));
+            stats_lines.push(format!("重复行种类数: {}", duplicate_lines_count));
+            // 注意：这里不再输出重复行详情，只输出摘要
 
-        match stats_output {
-            Some(path) => {
-                let content = stats_lines.join("\n");
-                std::fs::write(&path, content)?;
-                if args.verbose {
-                    eprintln!("统计信息已写入文件: {}", path.display());
+            match stats_output {
+                Some(path) => {
+                    let content = stats_lines.join("\n");
+                    std::fs::write(&path, content)?;
+                    if args.verbose {
+                        eprintln!("统计信息已写入文件: {}", path.display());
+                    }
                 }
-            }
-            None => {
-                for line in stats_lines {
-                    eprintln!("{}", line);
+                None => {
+                    for line in stats_lines {
+                        eprintln!("{}", line);
+                    }
                 }
             }
         }
     }
-
     // 写入排序/去重/计数后的结果（输出文件或标准输出）
     let write_duration = io_utils::write_lines(&processed, args.output.as_deref(), args.verbose)?;
 
