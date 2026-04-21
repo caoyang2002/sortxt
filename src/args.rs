@@ -45,4 +45,8 @@ pub struct Args {
     /// 输出重复行统计信息（不带参数则输出到 stderr，带参数则写入文件）
     #[arg(short = 's', long, value_name = "FILE", require_equals = true, num_args = 0..=1)]
     pub stats: Option<Option<PathBuf>>,
+
+    /// 删除空行以及只包含空白字符（空格、制表符等）的行
+    #[arg(short = 'e', long)]
+       pub delete_empty: bool,
 }
