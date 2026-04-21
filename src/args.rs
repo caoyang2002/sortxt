@@ -27,7 +27,7 @@ pub struct Args {
     pub verbose: bool,
 
     /// 生成随机测试数据（指定行数），此时将忽略排序及其他处理
-    #[arg(long, value_name = "LINES")]
+    #[arg(short = 'g',long, value_name = "LINES")]
     pub generate: Option<usize>,
 
     /// 生成数据的类型：char（单字）、word（词语）、sentence（句子），默认为 word

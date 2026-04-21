@@ -133,3 +133,35 @@ pub fn generate_stats(sorted_lines: &[String], config: SortConfig) -> Stats {
         duplicate_groups,
     }
 }
+
+// 在 unique.rs 中添加
+pub fn get_all_groups(sorted_lines: &[String], config: SortConfig) -> Vec<(String, usize)> {
+    if sorted_lines.is_empty() {
+        return Vec::new();
+    }
+    let mut groups = Vec::new();
+    let mut iter = sorted_lines.iter().peekable();
+    while let Some(line) = iter.next() {
+        let mut count = 1;
+        let line_key = if config.ignore_case {
+            line.to_ascii_lowercase()
+        } else {
+            line.clone()
+        };
+        while let Some(next) = iter.peek() {
+            let next_key = if config.ignore_case {
+                next.to_ascii_lowercase()
+            } else {
+                (*next).clone()
+            };
+            if next_key == line_key {
+                count += 1;
+                iter.next();
+            } else {
+                break;
+            }
+        }
+        groups.push((line.clone(), count));
+    }
+    groups
+}

@@ -3,3 +3,6 @@ release:
 
 clean:
 	cargo clean
+
+help:
+	cargo run -- --help
