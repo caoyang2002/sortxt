@@ -15,7 +15,7 @@
 ### 从源码编译
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/caoyang2002/sortxt.git
 cd sortxt
 cargo build --release
 ```
